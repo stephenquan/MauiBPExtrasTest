@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="MauiBPExtrasTest/MauiBPExtrasTest.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="SQuan.Helpers.Labs.SourceGenerators/SQuan.Helpers.Labs.SourceGenerators.csproj" />
+  <Project Path="SQuan.Helpers.Labs/SQuan.Helpers.Labs.csproj" />
+</Solution>
