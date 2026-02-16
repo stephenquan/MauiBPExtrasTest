@@ -7,7 +7,7 @@ namespace MauiBPExtrasTest;
 
 public partial class MainPage : ContentPage
 {
-	[BindableProperty(PropertyChangedMethodName = nameof(OnCountChanged))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCountChanged), PropertyChangingMethodName = nameof(OnCountChanging))]
 	[BindablePropertyExtras]
 	public partial int Count { get; set; } = 0;
 
@@ -25,5 +25,10 @@ public partial class MainPage : ContentPage
 	{
 		CounterBtn.Text = $"Clicked {value} times";
 		SemanticScreenReader.Announce(CounterBtn.Text);
+	}
+
+	partial void OnCountChanging(int oldValue, int newValue)
+	{
+		System.Diagnostics.Debug.WriteLine($"Count is changing from {oldValue} to {newValue}");
 	}
 }

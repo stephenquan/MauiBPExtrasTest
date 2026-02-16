@@ -61,37 +61,72 @@ public class BindablePropertyExtrasGenerator : IIncrementalGenerator
 		context.RegisterSourceOutput(properties, (spc, propertySymbol) =>
 		{
 			var propertyAttributes = propertySymbol!.GetAttributes();
-			var isClassGeneric = propertySymbol.ContainingType.IsGenericType;
 			var classSymbol = propertySymbol!.ContainingType;
-			var className = classSymbol.Name;
+			var className = classSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 			var bareClassName = classSymbol.Name;
 			var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
 			var propertyName = propertySymbol.Name;
 			var typeName = propertySymbol.Type.ToDisplayString();
-			if (isClassGeneric)
-			{
-				className = className + "<T>";
-			}
 			PropertyDeclarationSyntax propertySyntax = (propertySymbol.DeclaringSyntaxReferences[0].GetSyntax() as PropertyDeclarationSyntax)!;
 
 			bool hasPropertyChangedMethod = false;
 			string propertyChangedMethodName = string.Empty;
+			bool hasPropertyChangingMethod = false;
+			string propertyChangingMethodName = string.Empty;
 
 			foreach (var attr in propertyAttributes)
 			{
 				switch (attr.AttributeClass?.ToDisplayString())
 				{
 					case "CommunityToolkit.Maui.BindablePropertyAttribute":
-						if (attr.GetAttributeValueByName("PropertyChangedMethodName").Value is string methodName && !string.IsNullOrEmpty(methodName))
+						if (attr.GetAttributeValueByName("PropertyChangedMethodName").Value is string changedMethodName && !string.IsNullOrEmpty(changedMethodName))
 						{
 							hasPropertyChangedMethod = true;
-							propertyChangedMethodName = methodName;
+							propertyChangedMethodName = changedMethodName;
+						}
+						if (attr.GetAttributeValueByName("PropertyChangingMethodName").Value is string changingMethodName && !string.IsNullOrEmpty(changingMethodName))
+						{
+							hasPropertyChangingMethod = true;
+							propertyChangingMethodName = changingMethodName;
 						}
 						break;
 				}
 			}
 
+			string staticWrappers = string.Empty;
+			bool hasStaticWrappers = false;
+
 			if (hasPropertyChangedMethod)
+			{
+				staticWrappers +=
+					$$"""
+						static void {{propertyChangedMethodName}}(BindableObject b, object o, object n)
+						{
+							(({{className}})b).{{propertyChangedMethodName}}(({{typeName}})o, ({{typeName}})n);
+							(({{className}})b).{{propertyChangedMethodName}}(({{typeName}})n);
+						}
+						partial void {{propertyChangedMethodName}}({{typeName}} oldValue, {{typeName}} newValue);
+						partial void {{propertyChangedMethodName}}({{typeName}} value);
+					""";
+				hasStaticWrappers = true;
+			}
+
+			if (hasPropertyChangingMethod)
+			{
+				staticWrappers +=
+					$$"""
+						static void {{propertyChangingMethodName}}(BindableObject b, object o, object n)
+						{
+							(({{className}})b).{{propertyChangingMethodName}}(({{typeName}})o, ({{typeName}})n);
+							(({{className}})b).{{propertyChangingMethodName}}(({{typeName}})n);
+						}
+						partial void {{propertyChangingMethodName}}({{typeName}} oldValue, {{typeName}} newValue);
+						partial void {{propertyChangingMethodName}}({{typeName}} value);
+					""";
+				hasStaticWrappers = true;
+			}
+
+			if (hasStaticWrappers)
 			{
 				var source =
 					$$"""
@@ -106,18 +141,10 @@ public class BindablePropertyExtrasGenerator : IIncrementalGenerator
 					//[{GeneratedCodeAttribute}]
 					partial class {{className}}
 					{
-						static void {{propertyChangedMethodName}}(BindableObject b, object o, object n)
-						{
-							(({{className}})b).{{propertyChangedMethodName}}(({{typeName}})o, ({{typeName}})n);
-							(({{className}})b).{{propertyChangedMethodName}}(({{typeName}})n);
-						}
-
-						partial void {{propertyChangedMethodName}}({{typeName}} oldValue, {{typeName}} newValue);
-						partial void {{propertyChangedMethodName}}({{typeName}} value);
+						{{staticWrappers}}
 					}
 					""";
-
-				spc.AddSource($"{namespaceName}_{bareClassName}_{propertyName}_BindablePropertyExtras.g.cs", SourceText.From(source, Encoding.UTF8));
+				spc.AddSource($"{bareClassName}_{propertyName}_BindablePropertyExtras.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		});
 	}
