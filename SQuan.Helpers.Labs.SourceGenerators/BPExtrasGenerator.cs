@@ -1,4 +1,4 @@
-﻿// BindablePropertyExtrasGenerator.cs
+﻿// BPExtrasGenerator.cs
 
 //using System.Text;
 //using Microsoft.CodeAnalysis;
@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace SQuan.Helpers.Labs.SourceGenerators;
 
 [Generator]
-public class BindablePropertyExtrasGenerator : IIncrementalGenerator
+public class BPExtrasGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -46,8 +46,8 @@ public class BindablePropertyExtrasGenerator : IIncrementalGenerator
 							continue;
 						}
 
-						if (attr.AttributeClass?.Name == "SQuan.Helpers.Labs.BindablePropertyExtrasAttribute" ||
-							attr.AttributeClass?.ToDisplayString() == "SQuan.Helpers.Labs.BindablePropertyExtrasAttribute")
+						if (attr.AttributeClass?.Name == "SQuan.Helpers.Labs.BPExtrasAttribute" ||
+							attr.AttributeClass?.ToDisplayString() == "SQuan.Helpers.Labs.BPExtrasAttribute")
 						{
 							hasBindablePropertyExtrasAttribute = true;
 							continue;
