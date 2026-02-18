@@ -12,11 +12,11 @@ public partial class MainPage : ContentPage
 	public partial int Count { get; set; } = 0;
 	partial void OnCountChanged(int value)
 	{
-		System.Diagnostics.Trace.WriteLine($"Count is changed to {value}");
+		System.Diagnostics.Trace.WriteLine($"Count has changed to {value}");
 	}
 	partial void OnCountChanged(int oldValue, int newValue)
 	{
-		System.Diagnostics.Trace.WriteLine($"Count is changed from {oldValue} to {newValue}");
+		System.Diagnostics.Trace.WriteLine($"Count has changed from {oldValue} to {newValue}");
 	}
 	public MainPage()
 	{
